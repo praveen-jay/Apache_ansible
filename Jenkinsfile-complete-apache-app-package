@@ -1,0 +1,40 @@
+pipeline {
+  agent any
+    
+    stages {
+      stage('Cloning') {
+        steps {
+          git branch: 'vp-rem', url: 'https://github.com/sajjavenkey50/vprofile-repo.git'
+        }
+      }
+      stage('Build') {
+        steps {
+          sh "mvn clean package -DskipTests -B" 
+        }
+        post {
+        always {
+          echo "Archiving artifact"
+          archiveArtifacts artifacts: 'target/*.war'
+        }
+        }
+      }
+      stage('Tomcat Pkg') {
+        steps {
+          //sh 'wget -nv -O /tmp/apache-tomcat-8.5.78.zip https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.zip && unzip /tmp/apache-tomcat-8.5.78.zip >> /dev/null && rm -rf apache-tomcat-8.5.78/webapps/* && cp target/*.war apache-tomcat-8.5.78/webapps/ && zip -r tomcat8.zip apache-tomcat-8.5.78/* >> /dev/null && rm -rf apache-*'
+           sh 'rm -rf apache-* tomcat* && wget -nv -O /tmp/apache-tomcat-8.5.78.zip https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.zip && unzip /tmp/apache-tomcat-8.5.78.zip >> /dev/null && rm -rf apache-tomcat-8.5.78/webapps/* && cp target/*.war apache-tomcat-8.5.78/webapps/'        
+        }
+      }
+      stage('Archive') {
+        steps {
+            zip archive: true, dir: '', exclude: '', glob: '', zipFile: 'tomcat-8.5.78.zip'
+        }
+        post {
+            success {
+                mail (to: 'sajja.venkat05@gmail.com',
+         subject: "Job '${env.JOB_NAME}'- (${env.BUILD_NUMBER}) has SUCCEED",
+         body: "Please go to ${env.BUILD_URL} for more details. ");
+            }
+        }
+      }
+    }
+}
