@@ -15,7 +15,7 @@ pipeline {
         always {
           echo "Archiving artifact"
           archiveArtifacts artifacts: 'target/*.war'
-        }
+          }
         }
       }
       stage('Tomcat Pkg') {
@@ -26,7 +26,7 @@ pipeline {
       }
       stage('Archive') {
         steps {
-            zip archive: true, dir: '', exclude: '', glob: '', zipFile: 'tomcat-8.5.78.zip'
+            zip archive: true, dir: 'apache-tomcat-8.5.78', exclude: '', glob: '', zipFile: 'tomcat-8.5.78.zip'
         }
         post {
             success {
